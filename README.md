@@ -1,6 +1,6 @@
 # window.nostrdb.js
 
-A polyfill implementation of the [NIP-DB](https://raw.githubusercontent.com/hzrd149/nostr-bucket/refs/heads/master/nip.md) specification that provides a `window.nostrdb` API for web applications when browser extensions are not available.
+A polyfill implementation of the [NIP-DB](https://github.com/hzrd149/nostr-bucket/blob/master/nip.md) specification that provides a `window.nostrdb` API for web applications when browser extensions are not available.
 
 ## Overview
 
