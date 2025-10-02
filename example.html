@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example</title>
+
+    <!-- <script type="module" src="https://unpkg.com/window.nostrdb.js"></script> -->
+    <script type="module" src="./dist/window.nostrdb.js"></script>
+  </head>
+  <body>
+    <h1>window.nostrdb.js</h1>
+    <p>Open the console to see the results.</p>
+
+    <script type="module">
+      const count = await window.nostrdb.count([{ kinds: [1] }]);
+      console.log(count);
+
+      const supports = await window.nostrdb.supports();
+      console.log(supports);
+    </script>
+  </body>
+</html>

@@ -24,7 +24,7 @@
     "dist"
   ],
   "scripts": {
-    "bundle": "bun build --target bun --outfile dist/bundle.js index.ts",
+    "bundle": "bun build --production --target browser --outfile dist/window.nostrdb.js index.ts",
     "compile": "tsc --noEmit false",
     "build": "bun run compile && bun run bundle"
   },
