@@ -1,0 +1,42 @@
+{
+  "name": "window.nostrdb.js",
+  "version": "0.1.0",
+  "description": "A indexeddb polyfill for NIP-DB (window.nostrdb)",
+  "license": "MIT",
+  "author": "hzrd149",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hzrd149/window.nostrdb.js"
+  },
+  "homepage": "https://github.com/hzrd149/window.nostrdb.js",
+  "keywords": [
+    "nostr",
+    "nip-db",
+    "indexeddb",
+    "polyfill"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist/window.nostrdb.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "bundle": "bun build --target bun --outfile dist/bundle.js index.ts",
+    "compile": "tsc --noEmit false",
+    "build": "bun run compile && bun run bundle"
+  },
+  "dependencies": {
+    "nostr-idb": "^2.4.0",
+    "nostr-tools": "^2.17.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.6.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
