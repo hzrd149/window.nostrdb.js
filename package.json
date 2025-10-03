@@ -1,6 +1,6 @@
 {
   "name": "window.nostrdb.js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A indexeddb polyfill for NIP-DB (window.nostrdb)",
   "license": "MIT",
   "author": "hzrd149",
@@ -29,7 +29,7 @@
     "build": "bun run compile && bun run bundle"
   },
   "dependencies": {
-    "nostr-idb": "0.0.0-20251003120916",
+    "nostr-idb": "0.0.0-20251003122406",
     "nostr-tools": "~2.17.0"
   },
   "devDependencies": {
