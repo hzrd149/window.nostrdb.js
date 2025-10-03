@@ -1,10 +1,8 @@
-import { IndexedDBNostrDB } from "./nostrdb-idb.js";
-
-export * from "./interface.js";
-export * from "./nostrdb-idb.js";
+import "./interface.js";
+import { NostrIDB } from "nostr-idb";
 
 if (typeof window !== "undefined" && !("nostrdb" in window)) {
   // @ts-expect-error
-  window.nostrdb = new IndexedDBNostrDB();
+  window.nostrdb = new NostrIDB();
   console.log("polyfilled window.nostrdb");
 }

@@ -6,13 +6,13 @@
     <title>Example</title>
 
     <!-- <script type="module" src="https://unpkg.com/window.nostrdb.js"></script> -->
-    <script type="module" src="./dist/window.nostrdb.js"></script>
+    <script src="./dist/window.nostrdb.js"></script>
   </head>
   <body>
     <h1>window.nostrdb.js</h1>
     <p>Open the console to see the results.</p>
 
-    <script type="module">
+    <script>
       const count = await window.nostrdb.count([{ kinds: [1] }]);
       console.log(count);
 
