@@ -30,7 +30,7 @@ yarn add window.nostrdb.js
 You can also include the library directly in your HTML via CDN:
 
 ```html
-<script src="https://unpkg.com/window.nostrdb.js"></script>
+<script type="module" src="https://unpkg.com/window.nostrdb.js"></script>
 ```
 
 The library will automatically polyfill `window.nostrdb` when loaded via script tag.
@@ -56,7 +56,7 @@ When using the script tag, the library automatically polyfills `window.nostrdb`:
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://unpkg.com/window.nostrdb.js"></script>
+    <script type="module" src="https://unpkg.com/window.nostrdb.js"></script>
   </head>
   <body>
     <script>
@@ -179,6 +179,9 @@ interface IWindowNostrDB {
 
   /** Subscribe to events in the database based on filters */
   subscribe(filters: Filter[], handlers?: StreamHandlers): Subscription;
+
+  /** Lookup user profiles by search query */
+  lookup(query: string, limit?: number): Promise<ProfilePointer[]>;
 }
 ```
 

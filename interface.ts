@@ -1,4 +1,24 @@
+import type { SortMethod } from "applesauce-extra";
+import type { ISigner } from "applesauce-signers";
 import type { Filter, NostrEvent } from "nostr-tools";
+import type { ProfilePointer } from "nostr-tools/nip19";
+
+export type NostrDBConfig = {
+  /** Override local relay */
+  localRelay?: string;
+  /** Override primal cache server */
+  primalCache?: string;
+  /** Use primal cache for user search */
+  primalUserLookup: boolean;
+  /** Override vertex relay */
+  vertexRelay?: string;
+  /** Use vertex cache for user search */
+  vertexUserLookup: boolean;
+  /** Method to use for vertex user search */
+  vertexMethod: SortMethod;
+  /** Override signer for vertex */
+  vertexSigner?: () => Promise<ISigner | undefined>;
+};
 
 /** Generic type for a subscription */
 export type Subscription = {
@@ -12,10 +32,7 @@ export type StreamHandlers = {
 };
 
 /** Standard enums for feature checks */
-export enum Features {
-  Search = "search",
-  Subscribe = "subscribe",
-}
+export type Features = "search" | "subscribe" | "lookup";
 
 /** Main interface for the nostr event store */
 export interface IWindowNostrDB {
@@ -43,10 +60,14 @@ export interface IWindowNostrDB {
 
   /** Subscribe to events in the database based on filters */
   subscribe(filters: Filter[], handlers: StreamHandlers): Subscription;
+
+  /** Lookup user profiles by search query */
+  lookup(query: string, limit?: number): Promise<ProfilePointer[]>;
 }
 
 declare global {
   interface Window {
+    nostrdbConfig?: Partial<NostrDBConfig>;
     nostrdb: IWindowNostrDB;
   }
 }
