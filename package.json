@@ -1,6 +1,6 @@
 {
   "name": "window.nostrdb.js",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A indexeddb polyfill for NIP-DB (window.nostrdb)",
   "license": "MIT",
   "author": "hzrd149",
@@ -29,7 +29,7 @@
     "build": "bun run compile && bun run bundle"
   },
   "dependencies": {
-    "applesauce-extra": "0.0.0-next-20251009104432",
+    "applesauce-extra": "next",
     "applesauce-loaders": "^4.0.0",
     "applesauce-signers": "^4.0.0",
     "nostr-idb": "^3.0.0",

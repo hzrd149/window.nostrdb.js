@@ -107,17 +107,10 @@ const list = await window.nostrdb.replaceable(30000, pubkey, "mylist");
 const count = await window.nostrdb.count([{ kinds: [1] }]);
 
 // Get events with filters
-const subscription = window.nostrdb.filters(
-  [{ kinds: [1], authors: [pubkey] }],
-  {
-    event: (event) => console.log("New event:", event),
-    error: (error) => console.error("Error:", error),
-    complete: () => console.log("Query complete"),
-  },
-);
-
-// Clean up subscription
-subscription.close();
+const events = await window.nostrdb.filters([
+  { kinds: [1], authors: [pubkey] },
+]);
+console.log("Found events:", events);
 ```
 
 #### Real-time Subscriptions
@@ -175,7 +168,7 @@ interface IWindowNostrDB {
   supports(): Promise<Features[]>;
 
   /** Get events by filters */
-  filters(filters: Filter[], handlers?: StreamHandlers): Subscription;
+  filters(filters: Filter[]): Promise<NostrEvent[]>;
 
   /** Subscribe to events in the database based on filters */
   subscribe(filters: Filter[], handlers?: StreamHandlers): Subscription;

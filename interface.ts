@@ -56,7 +56,7 @@ export interface IWindowNostrDB {
   supports(): Promise<Features[]>;
 
   /** Get events by filters */
-  filters(filters: Filter[], handlers: StreamHandlers): Subscription;
+  filters(filters: Filter[]): Promise<NostrEvent[]>;
 
   /** Subscribe to events in the database based on filters */
   subscribe(filters: Filter[], handlers: StreamHandlers): Subscription;

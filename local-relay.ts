@@ -8,6 +8,7 @@ import {
 import { onlyEvents, Relay } from "applesauce-relay";
 import { type Filter, type NostrEvent } from "nostr-tools";
 import type { ProfilePointer } from "nostr-tools/nip19";
+import { insertEventIntoDescendingList } from "nostr-tools/utils";
 import { defaultIfEmpty, firstValueFrom, lastValueFrom, scan } from "rxjs";
 import {
   Features,
@@ -80,13 +81,16 @@ export class LocalRelay implements IWindowNostrDB {
   }
 
   /** Get events matching the given filters */
-  filters(filters: Filter[], handlers: StreamHandlers): Subscription {
-    const sub = this.relay.request(filters).pipe(onlyEvents()).subscribe({
-      next: handlers.event,
-      error: handlers.error,
-      complete: handlers.complete,
-    });
-    return { close: () => sub.unsubscribe() };
+  async filters(filters: Filter[]): Promise<NostrEvent[]> {
+    return await lastValueFrom(
+      this.relay.request(filters).pipe(
+        onlyEvents(),
+        scan(
+          (acc, event) => insertEventIntoDescendingList(acc, event),
+          [] as NostrEvent[],
+        ),
+      ),
+    );
   }
 
   /** Subscribe to events in the relay based on filters */
@@ -104,14 +108,8 @@ export class LocalRelay implements IWindowNostrDB {
     if (!(await this.supports()).includes("search"))
       throw new Error("Search is not supported for local relay backend");
 
-    return new Promise((res, rej) => {
-      const events: NostrEvent[] = [];
-      this.filters([{ kinds: [0], search: query, limit }], {
-        event: (event) => events.push(event),
-        error: (error) => rej(error),
-        complete: () => res(events.map((e) => ({ pubkey: e.pubkey }))),
-      });
-    });
+    const events = await this.filters([{ kinds: [0], search: query, limit }]);
+    return events.map((e) => ({ pubkey: e.pubkey, relays: [this.relay.url] }));
   }
 
   /** Check if the database backend supports features */
