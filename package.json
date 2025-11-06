@@ -6,7 +6,7 @@
   "author": "hzrd149",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hzrd149/window.nostrdb.js"
+    "url": "git+https://github.com/hzrd149/window.nostrdb.js.git"
   },
   "homepage": "https://github.com/hzrd149/window.nostrdb.js",
   "keywords": [
