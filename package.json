@@ -1,6 +1,6 @@
 {
   "name": "window.nostrdb.js",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A local relay and indexeddb polyfill for NIP-DB (window.nostrdb)",
   "license": "MIT",
   "author": "hzrd149",
