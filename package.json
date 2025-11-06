@@ -26,10 +26,11 @@
   "scripts": {
     "bundle": "bun build --production --target browser --outfile dist/window.nostrdb.js src/index.ts",
     "compile": "tsc --noEmit false",
-    "build": "bun run compile && bun run bundle"
+    "build": "bun run compile && bun run bundle",
+    "format": "prettier -w ."
   },
   "dependencies": {
-    "@contextvm/sdk": "^0.1.37",
+    "@contextvm/sdk": "^0.1.38",
     "@modelcontextprotocol/sdk": "^1.21.0",
     "applesauce-extra": "^4.1.0",
     "applesauce-loaders": "^4.2.0",
@@ -40,6 +41,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/bun": "latest",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3"

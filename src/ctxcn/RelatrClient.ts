@@ -115,9 +115,8 @@ export class RelatrClient implements Relatr {
       version: "1.0.0",
     });
 
-    // Private key precedence: constructor options > environment variable > config file
-    const resolvedPrivateKey =
-      options.privateKey || process.env.CTXCN_PRIVATE_KEY || "";
+    // Private key precedence: constructor options > config file
+    const resolvedPrivateKey = options.privateKey || "";
 
     const {
       privateKey: _,

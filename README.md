@@ -246,6 +246,7 @@ The `lookup()` method tries providers in the order specified in the `lookupProvi
 - **Local** (`"local"`): Uses the local relay or IndexedDB backend for user search (requires NIP-50 search support).
 
 **Example lookup flow:** If `lookupProviders: ["vertex", "primal", "relatr", "local"]` is configured:
+
 1. First tries Vertex (if signer is configured)
 2. If Vertex fails or signer is missing, tries Primal
 3. If Primal fails, tries Relatr (if pubkey and relays are configured)

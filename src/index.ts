@@ -1,12 +1,11 @@
-import "./interface.js";
 import type { ProfilePointer } from "nostr-tools/nip19";
-import { RelatrClient } from "./ctxcn/RelatrClient.js";
+import "./interface.js";
 import { IWindowNostrDB, NostrDBConfig } from "./interface.js";
 import { primalLookup } from "./lookup/primal.js";
 import { lookupRelatr } from "./lookup/relatr.js";
 import { vertexLookup } from "./lookup/vertex.js";
 
-export type { NostrDBConfig, IWindowNostrDB, Features } from "./interface.js";
+export type { Features, IWindowNostrDB, NostrDBConfig } from "./interface.js";
 
 const defaultConfig = {
   localRelays: ["ws://localhost:4869/"],
@@ -15,8 +14,8 @@ const defaultConfig = {
     method: "globalPagerank",
   },
   relatr: {
-    pubkey: RelatrClient.SERVER_PUBKEY,
-    relays: RelatrClient.DEFAULT_RELAYS,
+    pubkey: "750682303c9f0ddad75941b49edc9d46e3ed306b9ee3335338a21a3e404c5fa3",
+    relays: ["wss://relay.contextvm.org"],
   },
   lookupProviders: ["primal", "relatr", "local"],
 } satisfies NostrDBConfig;
