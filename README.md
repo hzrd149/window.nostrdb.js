@@ -35,6 +35,223 @@ You can also include the library directly in your HTML via CDN:
 
 The library will automatically polyfill `window.nostrdb` when loaded via script tag.
 
+## Configuration
+
+You can configure `window.nostrdb.js` by setting `window.nostrdbConfig` **before** importing the library. This allows you to customize the backend, user lookup providers, and other options.
+
+### Configuration Options
+
+```typescript
+interface NostrDBConfig {
+  /** Array of local relay URLs to connect to in parallel */
+  localRelays: string[];
+
+  /** Primal lookup provider settings */
+  primal?: {
+    /** Primal cache server URL */
+    cache?: string;
+  };
+
+  /** Vertex lookup provider settings */
+  vertex?: {
+    /** Vertex relay URL */
+    relay?: string;
+    /** Method to use for vertex user search */
+    method: "globalPagerank" | "following" | "followers" | "mutuals";
+    /** Signer for vertex */
+    signer?: () => Promise<ISigner | undefined>;
+  };
+
+  /** Relatr lookup provider settings */
+  relatr?: {
+    /** Relatr server pubkey */
+    pubkey: string;
+    /** Relays to connect to Relatr server */
+    relays: string[];
+  };
+
+  /** Ordered array of lookup providers to try (in order) */
+  lookupProviders: Array<"vertex" | "primal" | "local" | "relatr">;
+}
+```
+
+### Default Configuration
+
+```javascript
+{
+  localRelays: ["ws://localhost:4869/"],
+  primal: {},
+  vertex: {
+    method: "globalPagerank",
+  },
+  relatr: {
+    pubkey: "750682303c9f0ddad75941b49edc9d46e3ed306b9ee3335338a21a3e404c5fa3",
+    relays: ["wss://relay.contextvm.org"],
+  },
+  lookupProviders: ["primal", "relatr", "local"],
+}
+```
+
+### Configuration Examples
+
+#### Basic Configuration (Custom Local Relay)
+
+```javascript
+// Set config before importing
+window.nostrdbConfig = {
+  localRelays: ["ws://localhost:8080/"],
+};
+
+import "window.nostrdb.js";
+```
+
+#### Multiple Local Relays
+
+```javascript
+// Connect to multiple local relays in parallel
+window.nostrdbConfig = {
+  localRelays: [
+    "ws://localhost:4869/",
+    "ws://localhost:8080/",
+    "ws://localhost:7777/",
+  ],
+};
+
+import "window.nostrdb.js";
+```
+
+#### Using Vertex for User Lookup
+
+```javascript
+import { Nip07Signer } from "applesauce-signers/nip07";
+
+window.nostrdbConfig = {
+  vertex: {
+    method: "following",
+    signer: async () => new Nip07Signer(),
+  },
+  lookupProviders: ["vertex"],
+};
+
+import "window.nostrdb.js";
+
+// Now lookup will use Vertex
+const users = await window.nostrdb.lookup("satoshi");
+```
+
+#### Custom Primal Cache Server
+
+```javascript
+window.nostrdbConfig = {
+  primal: {
+    cache: "wss://my-primal-cache.example.com",
+  },
+  lookupProviders: ["primal"],
+};
+
+import "window.nostrdb.js";
+```
+
+#### Using Relatr for Trust-Scored User Lookup
+
+```javascript
+// Use Relatr with custom server configuration
+window.nostrdbConfig = {
+  relatr: {
+    pubkey: "750682303c9f0ddad75941b49edc9d46e3ed306b9ee3335338a21a3e404c5fa3",
+    relays: ["wss://relay.contextvm.org"],
+  },
+  lookupProviders: ["relatr"],
+};
+
+import "window.nostrdb.js";
+
+// Now lookup will use Relatr for trust-scored results
+const users = await window.nostrdb.lookup("satoshi");
+```
+
+#### Multiple Lookup Providers with Fallback
+
+```javascript
+import { Nip07Signer } from "applesauce-signers/nip07";
+
+// Try Vertex first, then Primal, then Relatr, then local relay
+window.nostrdbConfig = {
+  vertex: {
+    method: "following",
+    signer: async () => new Nip07Signer(),
+  },
+  primal: {},
+  relatr: {
+    pubkey: "750682303c9f0ddad75941b49edc9d46e3ed306b9ee3335338a21a3e404c5fa3",
+    relays: ["wss://relay.contextvm.org"],
+  },
+  lookupProviders: ["vertex", "primal", "relatr", "local"],
+};
+
+import "window.nostrdb.js";
+```
+
+#### Disable All Lookup Providers
+
+```javascript
+window.nostrdbConfig = {
+  lookupProviders: [],
+};
+
+import "window.nostrdb.js";
+```
+
+#### HTML Script Tag Configuration
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      // Configure before loading the module
+      window.nostrdbConfig = {
+        localRelays: ["ws://localhost:8080/"],
+        lookupProviders: ["primal"],
+      };
+    </script>
+    <script type="module" src="https://unpkg.com/window.nostrdb.js"></script>
+  </head>
+  <body>
+    <script>
+      // window.nostrdb is now available with custom config
+      window.nostrdb.lookup("satoshi").then((users) => {
+        console.log("Found users:", users);
+      });
+    </script>
+  </body>
+</html>
+```
+
+### Backend Selection
+
+The library automatically selects a backend by attempting to connect to all configured local relays in parallel:
+
+1. **Local Relay** (preferred): If one or more local relays are available from the configured URLs (default: `["ws://localhost:4869/"]`), they will be used. The library checks by making HTTP requests to each relay's info endpoint in parallel.
+
+2. **NostrIDB** (fallback): If no local relays are available, the library falls back to using `nostr-idb`, which stores events in the browser's IndexedDB.
+
+### User Lookup Providers
+
+The `lookup()` method tries providers in the order specified in the `lookupProviders` array. If a provider fails, it automatically tries the next one.
+
+- **Primal** (`"primal"`): Uses Primal's cache server for user search. Enabled by default.
+- **Relatr** (`"relatr"`): Uses Relatr for trust-scored user search based on social graph analysis. Enabled by default. Requires pubkey and relays to be configured.
+- **Vertex** (`"vertex"`): Uses Vertex for personalized user search based on your social graph. Requires a signer to be configured.
+- **Local** (`"local"`): Uses the local relay or IndexedDB backend for user search (requires NIP-50 search support).
+
+**Example lookup flow:** If `lookupProviders: ["vertex", "primal", "relatr", "local"]` is configured:
+1. First tries Vertex (if signer is configured)
+2. If Vertex fails or signer is missing, tries Primal
+3. If Primal fails, tries Relatr (if pubkey and relays are configured)
+4. If Relatr fails, tries the local backend
+5. If all fail, throws an error
+
 ## Usage
 
 ### ES Modules (NPM/CDN)
@@ -214,3 +431,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [nostr-bucket](https://github.com/hzrd149/nostr-bucket) - Reference browser extension implementation
 - [nostr-idb](https://github.com/hzrd149/nostr-idb) - IndexedDB backend for Nostr
 - [nostr-tools](https://github.com/nbd-wtf/nostr-tools) - Nostr utilities and types
+- [Relatr](https://github.com/ContextVM/relatr) - Trust-scored user search based on social graph analysis
+- [applesauce-extra](https://github.com/hzrd149/applesauce-signer) - Nostr utilities including Primal and Vertex support

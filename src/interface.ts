@@ -4,20 +4,35 @@ import type { Filter, NostrEvent } from "nostr-tools";
 import type { ProfilePointer } from "nostr-tools/nip19";
 
 export type NostrDBConfig = {
-  /** Override local relay */
-  localRelay?: string;
-  /** Override primal cache server */
-  primalCache?: string;
-  /** Use primal cache for user search */
-  primalUserLookup: boolean;
-  /** Override vertex relay */
-  vertexRelay?: string;
-  /** Use vertex cache for user search */
-  vertexUserLookup: boolean;
-  /** Method to use for vertex user search */
-  vertexMethod: SortMethod;
-  /** Override signer for vertex */
-  vertexSigner?: () => Promise<ISigner | undefined>;
+  /** Array of local relay URLs to connect to in parallel */
+  localRelays: string[];
+
+  /** Primal lookup provider settings */
+  primal?: {
+    /** Primal cache server URL */
+    cache?: string;
+  };
+
+  /** Vertex lookup provider settings */
+  vertex?: {
+    /** Vertex relay URL */
+    relay?: string;
+    /** Method to use for vertex user search */
+    method: SortMethod;
+    /** Signer for vertex */
+    signer?: () => Promise<ISigner | undefined>;
+  };
+
+  /** Relatr lookup provider settings */
+  relatr?: {
+    /** Relatr server pubkey */
+    pubkey: string;
+    /** Relays to connect to Relatr server */
+    relays: string[];
+  };
+
+  /** Ordered array of lookup providers to try (in order) */
+  lookupProviders: Array<"vertex" | "primal" | "local" | "relatr">;
 };
 
 /** Generic type for a subscription */
