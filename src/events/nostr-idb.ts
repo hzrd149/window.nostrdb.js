@@ -43,7 +43,6 @@ export class NostrIDBWrapper implements IWindowNostrDB {
   }
 
   async filters(filters: Filter[]): Promise<NostrEvent[]> {
-    // @ts-expect-error - NostrIDB may have a different signature
     return this.backend.filters(filters);
   }
 
