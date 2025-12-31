@@ -1,5 +1,12 @@
 # window.nostrdb.js
 
+## 0.5.1
+
+### Patch Changes
+
+- 94da8d2: Fix indexeddb storage backend
+- f41df96: Bump `@contextvm/sdk`
+
 ## 0.5.0
 
 ### Minor Changes
