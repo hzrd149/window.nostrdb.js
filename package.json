@@ -30,7 +30,7 @@
     "format": "prettier -w ."
   },
   "dependencies": {
-    "@contextvm/sdk": "^0.1.38",
+    "@contextvm/sdk": "^0.1.48",
     "@modelcontextprotocol/sdk": "^1.22.0",
     "applesauce-extra": "^4.1.0",
     "applesauce-loaders": "^4.2.0",
