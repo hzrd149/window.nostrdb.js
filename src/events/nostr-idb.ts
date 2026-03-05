@@ -1,12 +1,7 @@
 import { NostrIDB as NostrIDBBackend } from "nostr-idb";
 import type { Filter, NostrEvent } from "nostr-tools";
 import type { ProfilePointer } from "nostr-tools/nip19";
-import {
-  Features,
-  IWindowNostrDB,
-  StreamHandlers,
-  Subscription,
-} from "../interface.js";
+import { Features, IWindowNostrDB } from "../interface.js";
 
 /**
  * Wrapper for NostrIDB that implements the IWindowNostrDB interface
@@ -34,28 +29,21 @@ export class NostrIDBWrapper implements IWindowNostrDB {
     return this.backend.replaceable(kind, author, identifier);
   }
 
-  async count(filters: Filter[]): Promise<number> {
+  async count(filters: Filter | Filter[]): Promise<number> {
     return this.backend.count(filters);
   }
 
   async supports(): Promise<Features[]> {
-    return this.backend.supports() as Promise<Features[]>;
+    const raw = await this.backend.supports();
+    return raw.filter((f): f is Features => f === "search" || f === "lookup");
   }
 
-  async filters(filters: Filter[]): Promise<NostrEvent[]> {
-    return this.backend.filters(filters);
+  async query(filters: Filter | Filter[]): Promise<NostrEvent[]> {
+    return this.backend.query(filters);
   }
 
-  subscribe(filters: Filter[], handlers: StreamHandlers): Subscription {
-    const sub = this.backend.subscribe(filters, handlers);
-    // NostrIDB returns a compatible subscription object
-    return {
-      close: () => {
-        if ("close" in sub && typeof sub.close === "function") {
-          sub.close();
-        }
-      },
-    };
+  subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent> {
+    return this.backend.subscribe(filters);
   }
 
   /** Lookup is not supported for nostr-idb backend */

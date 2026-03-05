@@ -35,19 +35,8 @@ export type NostrDBConfig = {
   lookupProviders: Array<"vertex" | "primal" | "local" | "relatr">;
 };
 
-/** Generic type for a subscription */
-export type Subscription = {
-  close: () => void;
-};
-
-export type StreamHandlers = {
-  event?: (event: NostrEvent) => void;
-  error?: (error: Error) => void;
-  complete?: () => void;
-};
-
 /** Standard enums for feature checks */
-export type Features = "search" | "subscribe" | "lookup";
+export type Features = "search" | "lookup";
 
 /** Main interface for the nostr event store */
 export interface IWindowNostrDB {
@@ -64,17 +53,17 @@ export interface IWindowNostrDB {
     identifier?: string,
   ): Promise<NostrEvent | undefined>;
 
-  /** Count the number of events matching a filter */
-  count(filters: Filter[]): Promise<number>;
+  /** Count the number of events matching filters */
+  count(filters: Filter | Filter[]): Promise<number>;
 
-  /** Check if the database backend supports a feature */
+  /** Check if the database backend supports optional features */
   supports(): Promise<Features[]>;
 
   /** Get events by filters */
-  filters(filters: Filter[]): Promise<NostrEvent[]>;
+  query(filters: Filter | Filter[]): Promise<NostrEvent[]>;
 
   /** Subscribe to events in the database based on filters */
-  subscribe(filters: Filter[], handlers: StreamHandlers): Subscription;
+  subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent>;
 
   /** Lookup user profiles by search query */
   lookup(query: string, limit?: number): Promise<ProfilePointer[]>;

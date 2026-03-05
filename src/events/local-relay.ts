@@ -9,12 +9,7 @@ import { type Filter, type NostrEvent } from "nostr-tools";
 import type { ProfilePointer } from "nostr-tools/nip19";
 import { insertEventIntoDescendingList } from "nostr-tools/utils";
 import { defaultIfEmpty, firstValueFrom, lastValueFrom, scan } from "rxjs";
-import {
-  Features,
-  IWindowNostrDB,
-  StreamHandlers,
-  Subscription,
-} from "../interface.js";
+import { Features, IWindowNostrDB } from "../interface.js";
 
 export class LocalRelay implements IWindowNostrDB {
   private pool: RelayPool;
@@ -101,13 +96,14 @@ export class LocalRelay implements IWindowNostrDB {
   }
 
   /** Count events matching the given filters - try relays one at a time */
-  async count(filters: Filter[]): Promise<number> {
+  async count(filters: Filter | Filter[]): Promise<number> {
+    const filtersArray = Array.isArray(filters) ? filters : [filters];
     // Try relays one at a time until we get a result
     for (const url of this.urls) {
       try {
         const relay = this.pool.relay(url);
         const response = await lastValueFrom(
-          relay.count(filters).pipe(defaultIfEmpty(undefined)),
+          relay.count(filtersArray).pipe(defaultIfEmpty(undefined)),
         );
 
         // Relay did not respond, try next relay
@@ -124,16 +120,17 @@ export class LocalRelay implements IWindowNostrDB {
   }
 
   /** Get events matching the given filters from all relays in parallel */
-  async filters(filters: Filter[]): Promise<NostrEvent[]> {
+  async query(filters: Filter | Filter[]): Promise<NostrEvent[]> {
+    const filtersArray = Array.isArray(filters) ? filters : [filters];
     // If filters contain search, only use relays that support NIP-50
-    const targetRelays = this.hasSearchFilter(filters)
+    const targetRelays = this.hasSearchFilter(filtersArray)
       ? await this.getSearchSupportingRelayUrls()
       : this.urls;
 
     if (targetRelays.length === 0) return [];
 
     return await lastValueFrom(
-      this.pool.request(targetRelays, filters).pipe(
+      this.pool.request(targetRelays, filtersArray).pipe(
         scan(
           (acc: NostrEvent[], event: NostrEvent) =>
             insertEventIntoDescendingList(acc, event),
@@ -145,36 +142,54 @@ export class LocalRelay implements IWindowNostrDB {
   }
 
   /** Subscribe to events from all relays in parallel */
-  subscribe(filters: Filter[], handlers: StreamHandlers): Subscription {
+  async *subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent> {
+    const filtersArray = Array.isArray(filters) ? filters : [filters];
     // If filters contain search, only use relays that support NIP-50
-    // We need to handle this asynchronously
-    let sub: any;
+    const targetRelays = this.hasSearchFilter(filtersArray)
+      ? await this.getSearchSupportingRelayUrls()
+      : this.urls;
 
-    (async () => {
-      const targetRelays = this.hasSearchFilter(filters)
-        ? await this.getSearchSupportingRelayUrls()
-        : this.urls;
+    if (targetRelays.length === 0) return;
 
-      if (targetRelays.length === 0) {
-        handlers.error?.(new Error("No relays support search for this query"));
-        return;
+    // Buffer events received while the consumer is processing
+    const queue: NostrEvent[] = [];
+    let done = false;
+    let resolve: (() => void) | null = null;
+
+    const sub = this.pool
+      .subscription(targetRelays, filtersArray)
+      .pipe(onlyEvents())
+      .subscribe({
+        next: (event: NostrEvent) => {
+          queue.push(event);
+          resolve?.();
+          resolve = null;
+        },
+        error: () => {
+          done = true;
+          resolve?.();
+          resolve = null;
+        },
+        complete: () => {
+          done = true;
+          resolve?.();
+          resolve = null;
+        },
+      });
+
+    try {
+      while (!done || queue.length > 0) {
+        if (queue.length > 0) {
+          yield queue.shift()!;
+        } else {
+          await new Promise<void>((r) => {
+            resolve = r;
+          });
+        }
       }
-
-      sub = this.pool
-        .subscription(targetRelays, filters)
-        .pipe(onlyEvents())
-        .subscribe({
-          next: handlers.event,
-          error: handlers.error,
-          complete: handlers.complete,
-        });
-    })();
-
-    return {
-      close: () => {
-        if (sub) sub.unsubscribe();
-      },
-    };
+    } finally {
+      sub.unsubscribe();
+    }
   }
 
   /** Lookup user profiles by search query using NIP-50 search */
@@ -241,7 +256,7 @@ export class LocalRelay implements IWindowNostrDB {
 
   /** Check if the database backend supports features */
   async supports(): Promise<Features[]> {
-    const supportedFeatures: Features[] = ["subscribe"]; // Always support subscriptions
+    const supportedFeatures: Features[] = [];
 
     // Check if at least one relay supports NIP-50 search
     const searchRelays = await this.getSearchSupportingRelayUrls();
