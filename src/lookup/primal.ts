@@ -1,5 +1,5 @@
 import { DEFAULT_PRIMAL_RELAY, type PrimalCache } from "applesauce-extra";
-import type { ProfilePointer } from "nostr-tools/nip19";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 import type { NostrDBConfig } from "../interface.js";
 
 let primal: PrimalCache | null = null;

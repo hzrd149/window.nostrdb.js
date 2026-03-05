@@ -5,9 +5,12 @@ import {
   type EventPointerLoader,
 } from "applesauce-loaders/loaders";
 import { onlyEvents, RelayPool } from "applesauce-relay";
-import { type Filter, type NostrEvent } from "nostr-tools";
-import type { ProfilePointer } from "nostr-tools/nip19";
-import { insertEventIntoDescendingList } from "nostr-tools/utils";
+import {
+  type NostrEvent,
+  insertEventIntoDescendingList,
+} from "applesauce-core/helpers/event";
+import type { Filter } from "applesauce-core/helpers/filter";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 import { defaultIfEmpty, firstValueFrom, lastValueFrom, scan } from "rxjs";
 import { Features, IWindowNostrDB } from "../interface.js";
 

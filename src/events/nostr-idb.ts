@@ -1,6 +1,7 @@
 import { NostrIDB as NostrIDBBackend } from "nostr-idb";
-import type { Filter, NostrEvent } from "nostr-tools";
-import type { ProfilePointer } from "nostr-tools/nip19";
+import type { NostrEvent } from "applesauce-core/helpers/event";
+import type { Filter } from "applesauce-core/helpers/filter";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 import { Features, IWindowNostrDB } from "../interface.js";
 
 /**

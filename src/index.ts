@@ -1,4 +1,4 @@
-import type { ProfilePointer } from "nostr-tools/nip19";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 import "./interface.js";
 import { IWindowNostrDB, NostrDBConfig } from "./interface.js";
 import { primalLookup } from "./lookup/primal.js";

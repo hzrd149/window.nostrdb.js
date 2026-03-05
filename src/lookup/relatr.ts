@@ -1,4 +1,4 @@
-import type { ProfilePointer } from "nostr-tools/nip19";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 import { NostrDBConfig } from "../interface.js";
 import { type RelatrClient } from "../ctxcn/RelatrClient.js";
 

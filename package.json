@@ -30,14 +30,13 @@
     "format": "prettier -w ."
   },
   "dependencies": {
-    "@contextvm/sdk": "^0.1.48",
+    "@contextvm/sdk": "^0.6.2",
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "applesauce-extra": "^4.1.0",
-    "applesauce-loaders": "^4.2.0",
-    "applesauce-relay": "^4.4.2",
-    "applesauce-signers": "^4.2.0",
-    "nostr-idb": "5",
-    "nostr-tools": "~2.17.4",
+    "applesauce-extra": "^5.0.0",
+    "applesauce-loaders": "^5.1.0",
+    "applesauce-relay": "^5.1.0",
+    "applesauce-signers": "^5.1.0",
+    "nostr-idb": "^5.0.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {

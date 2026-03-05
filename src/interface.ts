@@ -1,7 +1,8 @@
 import type { SortMethod } from "applesauce-extra";
 import type { ISigner } from "applesauce-signers";
-import type { Filter, NostrEvent } from "nostr-tools";
-import type { ProfilePointer } from "nostr-tools/nip19";
+import type { NostrEvent } from "applesauce-core/helpers/event";
+import type { Filter } from "applesauce-core/helpers/filter";
+import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 
 export type NostrDBConfig = {
   /** Array of local relay URLs to connect to in parallel */
