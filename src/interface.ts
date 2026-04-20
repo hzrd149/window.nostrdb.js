@@ -1,43 +1,10 @@
-import type { SortMethod } from "applesauce-extra";
-import type { ISigner } from "applesauce-signers";
 import type { NostrEvent } from "applesauce-core/helpers/event";
 import type { Filter } from "applesauce-core/helpers/filter";
-import type { ProfilePointer } from "applesauce-core/helpers/pointers";
 
 export type NostrDBConfig = {
   /** Array of local relay URLs to connect to in parallel */
   localRelays: string[];
-
-  /** Primal lookup provider settings */
-  primal?: {
-    /** Primal cache server URL */
-    cache?: string;
-  };
-
-  /** Vertex lookup provider settings */
-  vertex?: {
-    /** Vertex relay URL */
-    relay?: string;
-    /** Method to use for vertex user search */
-    method: SortMethod;
-    /** Signer for vertex */
-    signer?: () => Promise<ISigner | undefined>;
-  };
-
-  /** Relatr lookup provider settings */
-  relatr?: {
-    /** Relatr server pubkey */
-    pubkey: string;
-    /** Relays to connect to Relatr server */
-    relays: string[];
-  };
-
-  /** Ordered array of lookup providers to try (in order) */
-  lookupProviders: Array<"vertex" | "primal" | "local" | "relatr">;
 };
-
-/** Standard enums for feature checks */
-export type Features = "search" | "lookup";
 
 /** Main interface for the nostr event store */
 export interface IWindowNostrDB {
@@ -58,16 +25,13 @@ export interface IWindowNostrDB {
   count(filters: Filter | Filter[]): Promise<number>;
 
   /** Check if the database backend supports optional features */
-  supports(): Promise<Features[]>;
+  supports(): Promise<string[]>;
 
   /** Get events by filters */
   query(filters: Filter | Filter[]): Promise<NostrEvent[]>;
 
   /** Subscribe to events in the database based on filters */
   subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent>;
-
-  /** Lookup user profiles by search query */
-  lookup(query: string, limit?: number): Promise<ProfilePointer[]>;
 }
 
 declare global {

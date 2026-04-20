@@ -1,8 +1,7 @@
 import { NostrIDB as NostrIDBBackend } from "nostr-idb";
 import type { NostrEvent } from "applesauce-core/helpers/event";
 import type { Filter } from "applesauce-core/helpers/filter";
-import type { ProfilePointer } from "applesauce-core/helpers/pointers";
-import { Features, IWindowNostrDB } from "../interface.js";
+import { IWindowNostrDB } from "../interface.js";
 
 /**
  * Wrapper for NostrIDB that implements the IWindowNostrDB interface
@@ -34,9 +33,9 @@ export class NostrIDBWrapper implements IWindowNostrDB {
     return this.backend.count(filters);
   }
 
-  async supports(): Promise<Features[]> {
+  async supports(): Promise<string[]> {
     const raw = await this.backend.supports();
-    return raw.filter((f): f is Features => f === "search" || f === "lookup");
+    return raw.filter((f): f is string => f === "search");
   }
 
   async query(filters: Filter | Filter[]): Promise<NostrEvent[]> {
@@ -45,10 +44,5 @@ export class NostrIDBWrapper implements IWindowNostrDB {
 
   subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent> {
     return this.backend.subscribe(filters);
-  }
-
-  /** Lookup is not supported for nostr-idb backend */
-  async lookup(_query: string, _limit?: number): Promise<ProfilePointer[]> {
-    throw new Error("lookup is not supported for nostr-idb backend");
   }
 }

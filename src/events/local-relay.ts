@@ -10,9 +10,8 @@ import {
   insertEventIntoDescendingList,
 } from "applesauce-core/helpers/event";
 import type { Filter } from "applesauce-core/helpers/filter";
-import type { ProfilePointer } from "applesauce-core/helpers/pointers";
-import { defaultIfEmpty, firstValueFrom, lastValueFrom, scan } from "rxjs";
-import { Features, IWindowNostrDB } from "../interface.js";
+import { firstValueFrom, lastValueFrom, scan } from "rxjs";
+import { IWindowNostrDB } from "../interface.js";
 
 export class LocalRelay implements IWindowNostrDB {
   private pool: RelayPool;
@@ -75,11 +74,9 @@ export class LocalRelay implements IWindowNostrDB {
 
   /** Get a single event by its ID */
   async event(id: string): Promise<NostrEvent | undefined> {
-    return await lastValueFrom(
-      this.eventLoader({ id, relays: this.urls }).pipe(
-        defaultIfEmpty(undefined),
-      ),
-    );
+    return await lastValueFrom(this.eventLoader({ id, relays: this.urls }), {
+      defaultValue: undefined,
+    });
   }
 
   /** Get the latest replaceable event for a given kind, author, and optional identifier */
@@ -94,7 +91,8 @@ export class LocalRelay implements IWindowNostrDB {
         pubkey: pubkey,
         identifier,
         relays: this.urls,
-      }).pipe(defaultIfEmpty(undefined)),
+      }),
+      { defaultValue: undefined },
     );
   }
 
@@ -105,9 +103,9 @@ export class LocalRelay implements IWindowNostrDB {
     for (const url of this.urls) {
       try {
         const relay = this.pool.relay(url);
-        const response = await lastValueFrom(
-          relay.count(filtersArray).pipe(defaultIfEmpty(undefined)),
-        );
+        const response = await lastValueFrom(relay.count(filtersArray), {
+          defaultValue: undefined,
+        });
 
         // Relay did not respond, try next relay
         if (response == undefined) continue;
@@ -133,14 +131,16 @@ export class LocalRelay implements IWindowNostrDB {
     if (targetRelays.length === 0) return [];
 
     return await lastValueFrom(
-      this.pool.request(targetRelays, filtersArray).pipe(
-        scan(
-          (acc: NostrEvent[], event: NostrEvent) =>
-            insertEventIntoDescendingList(acc, event),
-          [] as NostrEvent[],
+      this.pool
+        .request(targetRelays, filtersArray)
+        .pipe(
+          scan(
+            (acc: NostrEvent[], event: NostrEvent) =>
+              insertEventIntoDescendingList(acc, event),
+            [] as NostrEvent[],
+          ),
         ),
-        defaultIfEmpty([] as NostrEvent[]),
-      ),
+      { defaultValue: [] as NostrEvent[] },
     );
   }
 
@@ -195,77 +195,14 @@ export class LocalRelay implements IWindowNostrDB {
     }
   }
 
-  /** Lookup user profiles by search query using NIP-50 search */
-  async lookup(query: string, limit: number = 10): Promise<ProfilePointer[]> {
-    // Get relays that support NIP-50 search
-    const searchRelays = await this.getSearchSupportingRelayUrls();
-
-    if (searchRelays.length === 0)
-      throw new Error("No local relays support NIP-50 search");
-
-    // Create filter for kind 0 (profile metadata) with NIP-50 search
-    const filters: Filter[] = [
-      {
-        kinds: [0],
-        search: query,
-        limit: limit,
-      },
-    ];
-
-    // Try each relay in order until we get results
-    for (const url of searchRelays) {
-      try {
-        const relay = this.pool.relay(url);
-        const events = await lastValueFrom(
-          relay.request(filters).pipe(
-            scan(
-              (acc: NostrEvent[], event: NostrEvent) =>
-                insertEventIntoDescendingList(acc, event),
-              [] as NostrEvent[],
-            ),
-            defaultIfEmpty([] as NostrEvent[]),
-          ),
-        );
-
-        // If we got results, convert them to ProfilePointers and return
-        if (events.length > 0) {
-          // Deduplicate by pubkey (keep the latest event for each pubkey)
-          const pubkeyMap = new Map<string, NostrEvent>();
-          for (const event of events) {
-            const existing = pubkeyMap.get(event.pubkey);
-            if (!existing || event.created_at > existing.created_at) {
-              pubkeyMap.set(event.pubkey, event);
-            }
-          }
-
-          // Convert to ProfilePointers
-          return Array.from(pubkeyMap.values())
-            .slice(0, limit)
-            .map((event) => ({
-              pubkey: event.pubkey,
-              relays: [url],
-            }));
-        }
-      } catch (error) {
-        // If this relay fails, try the next one
-        console.warn(`NIP-50 search failed on relay ${url}:`, error);
-        continue;
-      }
-    }
-
-    // If no relay returned results, return empty array
-    return [];
-  }
-
   /** Check if the database backend supports features */
-  async supports(): Promise<Features[]> {
-    const supportedFeatures: Features[] = [];
+  async supports(): Promise<string[]> {
+    const supportedFeatures: string[] = [];
 
     // Check if at least one relay supports NIP-50 search
     const searchRelays = await this.getSearchSupportingRelayUrls();
     if (searchRelays.length > 0) {
       supportedFeatures.push("search");
-      supportedFeatures.push("lookup"); // NIP-50 search enables lookup
     }
 
     return supportedFeatures;

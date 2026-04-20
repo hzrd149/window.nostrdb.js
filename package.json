@@ -1,6 +1,6 @@
 {
   "name": "window.nostrdb.js",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "A local relay and indexeddb polyfill for NIP-DB (window.nostrdb)",
   "license": "MIT",
   "author": "hzrd149",
@@ -30,19 +30,14 @@
     "format": "prettier -w ."
   },
   "dependencies": {
-    "@contextvm/sdk": "^0.6.2",
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "applesauce-extra": "^5.0.0",
     "applesauce-loaders": "^5.1.0",
-    "applesauce-relay": "^5.1.0",
-    "applesauce-signers": "^5.1.0",
+    "applesauce-relay": "^5.2.0",
     "nostr-idb": "^5.0.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
     "@types/bun": "latest",
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "prettier": "^3.8.3",
+    "typescript": "^6"
   }
 }

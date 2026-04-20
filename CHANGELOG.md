@@ -1,5 +1,14 @@
 # window.nostrdb.js
 
+## 0.6.0
+
+### Major Changes
+
+- Align `window.nostrdb` with the latest NIP-DB: remove `lookup()` from the interface and drop the `"lookup"` feature flag
+- `supports()` now returns `Promise<string[]>` (the `Features` type has been removed)
+- Remove vertex, primal, and relatr lookup providers and their `NostrDBConfig` fields (`vertex`, `primal`, `relatr`, `lookupProviders`); `NostrDBConfig` now only contains `localRelays`
+- Drop `@contextvm/sdk`, `@modelcontextprotocol/sdk`, `applesauce-extra`, and `applesauce-signers` dependencies
+
 ## 0.5.1
 
 ### Patch Changes
