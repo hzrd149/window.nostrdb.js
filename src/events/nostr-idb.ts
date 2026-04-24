@@ -1,7 +1,7 @@
 import { NostrIDB as NostrIDBBackend } from "nostr-idb";
 import type { NostrEvent } from "applesauce-core/helpers/event";
 import type { Filter } from "applesauce-core/helpers/filter";
-import { IWindowNostrDB } from "../interface.js";
+import type { IWindowNostrDB } from "../interface.js";
 
 /**
  * Wrapper for NostrIDB that implements the IWindowNostrDB interface

@@ -34,9 +34,14 @@ export interface IWindowNostrDB {
   subscribe(filters: Filter | Filter[]): AsyncGenerator<NostrEvent>;
 }
 
+export interface IWindowNostrDBPolyfill extends IWindowNostrDB {
+  /** Update backend routing configuration at runtime */
+  configure(config: Partial<NostrDBConfig>): void;
+}
+
 declare global {
   interface Window {
     nostrdbConfig?: Partial<NostrDBConfig>;
-    nostrdb: IWindowNostrDB;
+    nostrdb: IWindowNostrDBPolyfill;
   }
 }

@@ -11,7 +11,7 @@ import {
 } from "applesauce-core/helpers/event";
 import type { Filter } from "applesauce-core/helpers/filter";
 import { firstValueFrom, lastValueFrom, scan } from "rxjs";
-import { IWindowNostrDB } from "../interface.js";
+import type { IWindowNostrDB } from "../interface.js";
 
 export class LocalRelay implements IWindowNostrDB {
   private pool: RelayPool;

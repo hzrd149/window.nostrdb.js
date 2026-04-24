@@ -4,10 +4,12 @@ A polyfill implementation of the [NIP-DB](https://github.com/hzrd149/nostr-bucke
 
 ## Overview
 
-This library implements the NIP-DB standard interface, allowing web applications to store and query Nostr events locally in the browser without requiring a browser extension. It selects a backend at load time:
+This library implements the NIP-DB standard interface, allowing web applications to store and query Nostr events locally in the browser without requiring a browser extension. Backend selection is lazy and per-request:
 
-1. **Local Relay** (preferred) — if at least one configured local relay URL responds to NIP-11 info, the library proxies all operations to those relays in parallel.
-2. **NostrIDB** (fallback) — if no local relays are reachable, events are stored in the browser's IndexedDB via [`nostr-idb`](https://github.com/hzrd149/nostr-idb).
+1. **NostrIDB** (default) — events are stored in the browser's IndexedDB via [`nostr-idb`](https://github.com/hzrd149/nostr-idb). This is always the fallback and is used when no local relays are configured.
+2. **Local Relay** (opt-in) — if the app sets `localRelays` in its config, each request checks NIP-11 reachability (cached briefly) and routes to those relays when any are available, otherwise falls back to NostrIDB.
+
+No connection attempts are made at import time. Backend modules and local relay probes are loaded lazily the first time a request needs them.
 
 ## Features
 
@@ -38,11 +40,11 @@ The library automatically polyfills `window.nostrdb` when loaded.
 
 ## Configuration
 
-Set `window.nostrdbConfig` **before** importing the library to customize the local relay URLs.
+Local relay support is **opt-in**. By default the library uses only the NostrIDB backend and makes no network connections. To enable local relay routing at startup, set `window.nostrdbConfig` **before** importing the library.
 
 ```typescript
 interface NostrDBConfig {
-  /** Array of local relay URLs to connect to in parallel */
+  /** Local relay URLs to route requests to. Empty array (the default) disables the local relay and uses only NostrIDB. */
   localRelays: string[];
 }
 ```
@@ -51,17 +53,39 @@ interface NostrDBConfig {
 
 ```javascript
 {
-  localRelays: ["ws://localhost:4869/"],
+  localRelays: [],
 }
+```
+
+### Routing Behavior
+
+When `localRelays` is non-empty, each request checks whether the configured relays are reachable via NIP-11, but at most once per minute. The result is cached and reused for subsequent requests within that window. Any reachable relay routes the request to the local relay backend. If none are reachable, the request routes to NostrIDB.
+
+Long-lived subscriptions are bound to whichever backend was chosen when the subscription started. Runtime configuration changes apply to new operations and subscriptions, not subscriptions that are already running.
+
+### Runtime switching
+
+After the polyfill is installed, call `window.nostrdb.configure(...)` to switch backend routing without reloading the page. This clears cached relay availability and creates a new local relay backend for future operations.
+
+```javascript
+// Prefer a local relay for future operations when reachable.
+window.nostrdb.configure({
+  localRelays: ["ws://localhost:4869/"],
+});
+
+// Switch future operations back to IndexedDB-only mode.
+window.nostrdb.configure({
+  localRelays: [],
+});
 ```
 
 ### Examples
 
-#### Custom local relay
+#### Enable a single local relay
 
 ```javascript
 window.nostrdbConfig = {
-  localRelays: ["ws://localhost:8080/"],
+  localRelays: ["ws://localhost:4869/"],
 };
 
 import "window.nostrdb.js";
@@ -89,7 +113,7 @@ import "window.nostrdb.js";
   <head>
     <script>
       window.nostrdbConfig = {
-        localRelays: ["ws://localhost:8080/"],
+        localRelays: ["ws://localhost:4869/"],
       };
     </script>
     <script type="module" src="https://unpkg.com/window.nostrdb.js"></script>
